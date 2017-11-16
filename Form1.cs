@@ -438,7 +438,8 @@ namespace asgn5v1
                 MessageBox.Show("***Failed to Open Line Data File***");
                 return false;
             }
-            setIdentity(ctrans, 4, 4);  //initialize transformation matrix to identity
+            setIdentity();  //initialize transformation matrix to identity
+            
             return true;
         } // end of GetNewData
 
@@ -480,20 +481,9 @@ namespace asgn5v1
             }
         } // end of DecodeLines
 
-        void setIdentity(double[,] A, int nrow, int ncol)
+        void setIdentity()
         {
-            for (int i = 0; i < nrow; i++)
-            {
-                for (int j = 0; j < ncol; j++)
-                    A[i, j] = 0.0d;
-                A[i, i] = 1.0d;
-            }
-        }// end of setIdentity
-
-
-        private void Transformer_Load(object sender, System.EventArgs e)
-        {
-
+            Debug.WriteLine(Width + " " + Height);
             ctrans = new double[,]
              {
                 { 1d, 0d, 0d, 0d },
@@ -501,6 +491,14 @@ namespace asgn5v1
                 { 0d, 0d, 1d, 0d },
                 { 0d, 0d, 0d, 1d }
             };
+            Debug.Write(Math.Sqrt(Width * Height));
+            Scale(Math.Sqrt(Width * Height) / 50);
+            Translate((Width / 2) - screenPoints[0,0], (Height / 2) - screenPoints[0, 0], 0);
+        }// end of setIdentity
+
+
+        private void Transformer_Load(object sender, System.EventArgs e)
+        {
         }
 
         private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
