@@ -50,6 +50,8 @@ namespace asgn5v1
         private ToolBarButton resetbtn;
         private ToolBarButton exitbtn;
         int[,] lines;
+        double[] returnVals;
+        double[] toZeroArray;
 
         public Transformer()
         {
@@ -343,7 +345,6 @@ namespace asgn5v1
             {
                 //create the screen coordinates:
                 // scrnpts = vertices*ctrans
-
                 for (int i = 0; i < numpts; i++)
                 {
                     for (int j = 0; j < 4; j++)
@@ -439,7 +440,7 @@ namespace asgn5v1
                 return false;
             }
             setIdentity();  //initialize transformation matrix to identity
-            
+
             return true;
         } // end of GetNewData
 
@@ -487,19 +488,135 @@ namespace asgn5v1
             ctrans = new double[,]
              {
                 { 1d, 0d, 0d, 0d },
-                { 0d, 1d, 0d, 0d },
+                { 0d, -1d, 0d, 0d },
                 { 0d, 0d, 1d, 0d },
                 { 0d, 0d, 0d, 1d }
             };
-            Debug.Write(Math.Sqrt(Width * Height));
+            screenPoints = (double[,])vertices.Clone();
             Scale(Math.Sqrt(Width * Height) / 50);
-            Translate((Width / 2) - screenPoints[0,0], (Height / 2) - screenPoints[0, 0], 0);
+            Translate((Width / 2) - screenPoints[0, 0], Height - screenPoints[0, 1], 0);
         }// end of setIdentity
 
 
         private void Transformer_Load(object sender, System.EventArgs e)
         {
         }
+        public void Reflect(double x = 1, double y = 1, double z = 1)
+        {
+            
+        }
+
+        public void Translate(double x = 0, double y = 0, double z = 0)
+        {
+            double[,] translateMatrix =
+            {
+                {1,0,0,0 },
+                {0,1,0,0 },
+                {0,0,1,0 },
+                {x,y,z,1 },
+            };
+            multiplyMatrices(ctrans, translateMatrix);
+        }
+
+        public void Scale(double scaleAmount)
+        {
+            moveToZero();
+            double[,] scaleMatrix =
+            {
+                {scaleAmount,0,0,0 },
+                {0,scaleAmount,0,0 },
+                {0,0,scaleAmount,0 },
+                {0,0,0,1 },
+            };
+            multiplyMatrices(ctrans, scaleMatrix);
+            moveBack();
+        }
+
+        public void moveToZero()
+        {
+            returnVals = new double[] { screenPoints[0, 0], screenPoints[0, 1], screenPoints[0, 2] };
+            toZeroArray = new double[] { 0 - returnVals[0], 0 - returnVals[1], 0 - returnVals[2] };
+            Translate(toZeroArray[0], toZeroArray[1], toZeroArray[2]);
+        }
+        
+
+        public void moveBack()
+        {
+            Translate(returnVals[0], returnVals[1], returnVals[2]);
+        }
+
+        public void RotateX()
+        {
+            moveToZero();
+            double[,] rotateMatrix =
+            {
+                {1,0,0,0 },
+                {0,Math.Cos(0.05),-Math.Sin(0.05),0 },
+                {0,Math.Sin(0.05),Math.Cos(0.05),0 },
+                {0,0,0,1 },
+            };
+            multiplyMatrices(ctrans, rotateMatrix);
+            moveBack();
+        }
+        
+        public void RotateY()
+        {
+            moveToZero();
+            double[,] rotateMatrix =
+            {
+                {Math.Cos(0.05), 0, Math.Sin(0.05),0 },
+                {0,1,0,0 },
+                {-Math.Sin(0.05), 0, Math.Cos(0.05),0 },
+                {0,0,0,1 },
+            };
+            multiplyMatrices(ctrans, rotateMatrix);
+            moveBack();
+        }
+
+        public void RotateZ()
+        {
+            moveToZero();
+            double[,] rotateMatrix =
+            {
+                {Math.Cos(0.05),-Math.Sin(0.05),0,0 },
+                {Math.Sin(0.05),Math.Cos(0.05),0,0 },
+                {0,0,1,0 },
+                {0,0,0,1 },
+            };
+            multiplyMatrices(ctrans, rotateMatrix);
+            moveBack();
+        }
+
+        public void Shear(double left = 0, double right = 0)
+        {
+
+        }
+        public void Reset()
+        {
+            setIdentity();
+            Refresh();
+        }
+
+        /// <summary>
+        /// multiplies 2 matrices, and puts values into matrix 1
+        /// </summary>
+        /// <param name="m1"></param>
+        /// <param name="m2"></param>
+        public void multiplyMatrices(double [,] m1, double [,] m2)
+        {
+            double temp;
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    temp = 0.0d;
+                    for (int k = 0; k < 4; k++)
+                        temp += m1[i, k] * m2[k, j];
+                    m1[i, j] = temp;
+                }
+            }
+        }
+
 
         private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
         {
@@ -507,14 +624,6 @@ namespace asgn5v1
             {
                 Translate(-75);
                 Refresh();
-                /*Debug.WriteLine(screenPoints.GetLength(0));
-                Debug.WriteLine(screenPoints.GetLength(1));
-                for (int i = 0; i < screenPoints.GetLength(0); ++i)
-                {
-                    for (int j = 0; j < screenPoints.GetLength(1); ++j)
-                        Debug.Write(screenPoints[i, j] + " ");
-                    Debug.WriteLine("");
-                }*/
             }
             else if (e.Button == transrightbtn)
             {
@@ -544,17 +653,17 @@ namespace asgn5v1
             }
             else if (e.Button == rotxby1btn)
             {
-                RotateXBy1();
+                RotateX();
                 Refresh();
             }
             else if (e.Button == rotyby1btn)
             {
-                RotateYBy1();
+                RotateY();
                 Refresh();
             }
             else if (e.Button == rotzby1btn)
             {
-                RotateZBy1();
+                RotateZ();
                 Refresh();
             }
 
@@ -577,13 +686,13 @@ namespace asgn5v1
 
             else if (e.Button == shearleftbtn)
             {
-                ShearLeft();
+                Shear(0, 0);
                 Refresh();
             }
 
             else if (e.Button == shearrightbtn)
             {
-                ShearRight();
+                Shear(0, 0);
                 Refresh();
             }
 
@@ -596,102 +705,6 @@ namespace asgn5v1
             {
                 Close();
             }
-        }
-
-        public void Translate(double x = 0, double y = 0, double z = 0)
-        {
-            double[,] translateMatrix =
-            {
-                {1,0,0,0 },
-                {0,1,0,0 },
-                {0,0,1,0 },
-                {x,y,z,1 },
-            };
-            double temp;
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    temp = 0.0d;
-                    for (int k = 0; k < 4; k++)
-                        temp += ctrans[i, k] * translateMatrix[k, j];
-                    ctrans[i, j] = temp;
-                }
-            }
-        }
-
-        public void TranslateDown()
-        {
-            ctrans[3, 1] += 35;
-        }
-
-        public void Scale(double scaleAmount)
-        {
-            double temp;
-            double[] returnVals = { screenPoints[0, 0], screenPoints[0, 1], screenPoints[0, 2] };
-            double[] toZeroArray = { 0 - returnVals[0], 0 - returnVals[1], 0 - returnVals[2] };
-
-            Translate(toZeroArray[0], toZeroArray[1], toZeroArray[2]);
-
-            double[,] scaleMatrix =
-            {
-                {scaleAmount,0,0,0 },
-                {0,scaleAmount,0,0 },
-                {0,0,scaleAmount,0 },
-                {0,0,0,1 },
-            };
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    temp = 0.0d;
-                    for (int k = 0; k < 4; k++)
-                        temp += ctrans[i, k] * scaleMatrix[k, j];
-                    ctrans[i, j] = temp;
-                }
-            }
-
-            Translate(returnVals[0], returnVals[1], returnVals[2]);
-        }
-
-        public void RotateXBy1()
-        {
-
-        }
-
-        public void RotateYBy1()
-        {
-
-        }
-        public void RotateZBy1()
-        {
-
-        }
-
-        public void RotateX()
-        {
-
-        }
-        public void RotateY()
-        {
-
-        }
-        public void RotateZ()
-        {
-
-        }
-        public void ShearLeft()
-        {
-
-        }
-        public void ShearRight()
-        {
-
-        }
-        public void Reset()
-        {
-            screenPoints = (double[,])vertices.Clone();
-            Refresh();
         }
 
     }
