@@ -495,6 +495,7 @@ namespace asgn5v1
             screenPoints = (double[,])vertices.Clone();
             Scale(Math.Sqrt(Width * Height) / 50);
             Translate((Width / 2) - screenPoints[0, 0], Height - screenPoints[0, 1], 0);
+            Refresh();
         }// end of setIdentity
 
 
@@ -513,7 +514,7 @@ namespace asgn5v1
                 {1,0,0,0 },
                 {0,1,0,0 },
                 {0,0,1,0 },
-                {x,y,z,1 },
+                {x,y,z,1 }
             };
             multiplyMatrices(ctrans, translateMatrix);
         }
@@ -526,7 +527,7 @@ namespace asgn5v1
                 {scaleAmount,0,0,0 },
                 {0,scaleAmount,0,0 },
                 {0,0,scaleAmount,0 },
-                {0,0,0,1 },
+                {0,0,0,1 }
             };
             multiplyMatrices(ctrans, scaleMatrix);
             moveBack();
@@ -553,7 +554,7 @@ namespace asgn5v1
                 {1,0,0,0 },
                 {0,Math.Cos(0.05),-Math.Sin(0.05),0 },
                 {0,Math.Sin(0.05),Math.Cos(0.05),0 },
-                {0,0,0,1 },
+                {0,0,0,1 }
             };
             multiplyMatrices(ctrans, rotateMatrix);
             moveBack();
@@ -567,7 +568,7 @@ namespace asgn5v1
                 {Math.Cos(0.05), 0, Math.Sin(0.05),0 },
                 {0,1,0,0 },
                 {-Math.Sin(0.05), 0, Math.Cos(0.05),0 },
-                {0,0,0,1 },
+                {0,0,0,1 }
             };
             multiplyMatrices(ctrans, rotateMatrix);
             moveBack();
@@ -581,7 +582,7 @@ namespace asgn5v1
                 {Math.Cos(0.05),-Math.Sin(0.05),0,0 },
                 {Math.Sin(0.05),Math.Cos(0.05),0,0 },
                 {0,0,1,0 },
-                {0,0,0,1 },
+                {0,0,0,1 }
             };
             multiplyMatrices(ctrans, rotateMatrix);
             moveBack();
@@ -604,6 +605,7 @@ namespace asgn5v1
         /// <param name="m2"></param>
         public void multiplyMatrices(double [,] m1, double [,] m2)
         {
+            double[,] m3 = new double[4,4];
             double temp;
             for (int i = 0; i < 4; i++)
             {
@@ -612,9 +614,10 @@ namespace asgn5v1
                     temp = 0.0d;
                     for (int k = 0; k < 4; k++)
                         temp += m1[i, k] * m2[k, j];
-                    m1[i, j] = temp;
+                    m3[i, j] = temp;
                 }
             }
+            ctrans = m3;
         }
 
 
