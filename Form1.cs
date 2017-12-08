@@ -19,7 +19,7 @@ namespace asgn5v1
         //private bool GetNewData();
 
         // basic data for Transformer
-
+        Timer timer;
         int numpts = 0;
         int numlines = 0;
         bool gooddata = false;
@@ -188,7 +188,7 @@ namespace asgn5v1
             this.toolBar1.ShowToolTips = true;
             this.toolBar1.Size = new System.Drawing.Size(24, 306);
             this.toolBar1.TabIndex = 0;
-            this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.toolBar1_ButtonClick);
+            this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.ToolBar1_ButtonClick);
             // 
             // transleftbtn
             // 
@@ -313,7 +313,7 @@ namespace asgn5v1
             // 
             // Transformer
             // 
-            this.AutoScaleBaseSize = new System.Drawing.Size(6, 15);
+            this.AutoScaleBaseSize = new System.Drawing.Size(10, 24);
             this.ClientSize = new System.Drawing.Size(508, 306);
             this.Controls.Add(this.toolBar1);
             this.Name = "Transformer";
@@ -504,8 +504,48 @@ namespace asgn5v1
         }
         public void Reflect(double x = 1, double y = 1, double z = 1)
         {
-            
+
         }
+
+        
+
+        public void moveCenterToOrigin()
+        {
+            returnVals = new double[] { screenPoints[0, 0], screenPoints[0, 1], screenPoints[0, 2] };
+            toZeroArray = new double[] { 0 - returnVals[0], 0 - returnVals[1], 0 - returnVals[2] };
+            Translate(toZeroArray[0], toZeroArray[1], toZeroArray[2]);
+        }
+
+
+        public void moveLowPointToXAxis()
+        {
+            double highPoint = findHighestPoint();
+            returnVals = new double [] { 0, highPoint, 0 };
+            toZeroArray = new double[] {0, -highPoint, 0 };
+            Translate(toZeroArray[0], toZeroArray[1], toZeroArray[2]);
+
+        }
+
+
+        public void moveBack()
+        {
+            Translate(returnVals[0], returnVals[1], returnVals[2]);
+        }
+
+        public double findHighestPoint()
+        {
+            double highestPoint = 0;
+            for (int row = 0; row < screenPoints.GetLength(0); ++row)
+            {
+                if (screenPoints[row, 1] > highestPoint)
+                {
+                    highestPoint = screenPoints[row, 1];
+                }
+            }
+
+            return highestPoint;
+        }
+
 
         public void Translate(double x = 0, double y = 0, double z = 0)
         {
@@ -516,12 +556,13 @@ namespace asgn5v1
                 {0,0,1,0 },
                 {x,y,z,1 }
             };
-            multiplyMatrices(ctrans, translateMatrix);
+            MultiplyMatrices(ctrans, translateMatrix);
         }
+
 
         public void Scale(double scaleAmount)
         {
-            moveToZero();
+            moveCenterToOrigin();
             double[,] scaleMatrix =
             {
                 {scaleAmount,0,0,0 },
@@ -529,26 +570,13 @@ namespace asgn5v1
                 {0,0,scaleAmount,0 },
                 {0,0,0,1 }
             };
-            multiplyMatrices(ctrans, scaleMatrix);
+            MultiplyMatrices(ctrans, scaleMatrix);
             moveBack();
-        }
-
-        public void moveToZero()
-        {
-            returnVals = new double[] { screenPoints[0, 0], screenPoints[0, 1], screenPoints[0, 2] };
-            toZeroArray = new double[] { 0 - returnVals[0], 0 - returnVals[1], 0 - returnVals[2] };
-            Translate(toZeroArray[0], toZeroArray[1], toZeroArray[2]);
-        }
-        
-
-        public void moveBack()
-        {
-            Translate(returnVals[0], returnVals[1], returnVals[2]);
         }
 
         public void RotateX()
         {
-            moveToZero();
+            moveCenterToOrigin();
             double[,] rotateMatrix =
             {
                 {1,0,0,0 },
@@ -556,13 +584,20 @@ namespace asgn5v1
                 {0,Math.Sin(0.05),Math.Cos(0.05),0 },
                 {0,0,0,1 }
             };
-            multiplyMatrices(ctrans, rotateMatrix);
+            MultiplyMatrices(ctrans, rotateMatrix);
             moveBack();
+
         }
-        
+
+        public void RotateX(object sender, EventArgs e)
+        {
+            RotateX();
+            Refresh();
+        }
+
         public void RotateY()
         {
-            moveToZero();
+            moveCenterToOrigin();
             double[,] rotateMatrix =
             {
                 {Math.Cos(0.05), 0, Math.Sin(0.05),0 },
@@ -570,13 +605,19 @@ namespace asgn5v1
                 {-Math.Sin(0.05), 0, Math.Cos(0.05),0 },
                 {0,0,0,1 }
             };
-            multiplyMatrices(ctrans, rotateMatrix);
+            MultiplyMatrices(ctrans, rotateMatrix);
             moveBack();
+        }
+
+        public void RotateY(object sender, EventArgs e)
+        {
+            RotateY();
+            Refresh();
         }
 
         public void RotateZ()
         {
-            moveToZero();
+            moveCenterToOrigin();
             double[,] rotateMatrix =
             {
                 {Math.Cos(0.05),-Math.Sin(0.05),0,0 },
@@ -584,13 +625,30 @@ namespace asgn5v1
                 {0,0,1,0 },
                 {0,0,0,1 }
             };
-            multiplyMatrices(ctrans, rotateMatrix);
+            MultiplyMatrices(ctrans, rotateMatrix);
             moveBack();
         }
 
-        public void Shear(double left = 0, double right = 0)
+        public void RotateZ(object sender, EventArgs e)
         {
+            RotateZ();
+            Refresh();
+        }
 
+       
+        public void Shear(double factor)
+        {
+            moveLowPointToXAxis();
+            double[,] shearMatrix =
+            {
+                {1,0,0,0 },
+                {factor,1,0,0 },
+                {0,0,1,0 },
+                {0,0,0,1 }
+            };
+            MultiplyMatrices(ctrans, shearMatrix);
+
+            moveBack();
         }
         public void Reset()
         {
@@ -603,9 +661,9 @@ namespace asgn5v1
         /// </summary>
         /// <param name="m1"></param>
         /// <param name="m2"></param>
-        public void multiplyMatrices(double [,] m1, double [,] m2)
+        public void MultiplyMatrices(double[,] m1, double[,] m2)
         {
-            double[,] m3 = new double[4,4];
+            double[,] m3 = new double[4, 4];
             double temp;
             for (int i = 0; i < 4; i++)
             {
@@ -621,8 +679,13 @@ namespace asgn5v1
         }
 
 
-        private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
+
+        private void ToolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
         {
+            if (timer != null)
+            {
+                timer.Stop();
+            }
             if (e.Button == transleftbtn)
             {
                 Translate(-75);
@@ -672,30 +735,36 @@ namespace asgn5v1
 
             else if (e.Button == rotxbtn)
             {
-                RotateX();
-                Refresh();
+                timer = new Timer();
+                timer.Tick += new EventHandler(RotateX);
+                timer.Interval = 10;
+                timer.Enabled = true;
             }
             else if (e.Button == rotybtn)
             {
-                RotateY();
-                Refresh();
+                timer = new Timer();
+                timer.Tick += new EventHandler(RotateY);
+                timer.Interval = 10;
+                timer.Enabled = true;
             }
 
             else if (e.Button == rotzbtn)
             {
-                RotateZ();
-                Refresh();
+                timer = new Timer();
+                timer.Tick += new EventHandler(RotateZ);
+                timer.Interval = 10;
+                timer.Enabled = true;
             }
 
             else if (e.Button == shearleftbtn)
             {
-                Shear(0, 0);
+                Shear(-.1);
                 Refresh();
             }
 
             else if (e.Button == shearrightbtn)
             {
-                Shear(0, 0);
+                Shear(.1);
                 Refresh();
             }
 
